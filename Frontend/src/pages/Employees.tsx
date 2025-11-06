@@ -237,7 +237,7 @@ export default function Employees() {
                           <Pencil className="h-3 w-3" />
                           Edit
                         </Button>
-                        <Button
+                        {/* <Button
                           variant="outline"
                           size="sm"
                           onClick={() => setDeletingEmployee(employee)}
@@ -245,7 +245,7 @@ export default function Employees() {
                         >
                           <Trash2 className="h-3 w-3" />
                           Delete
-                        </Button>
+                        </Button> */}
                       </div>
                     </TableCell>
                   </TableRow>

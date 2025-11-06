@@ -62,13 +62,13 @@ export function verifyToken(token: string): JWTPayload {
     return decoded;
   } catch (error) {
     if (error instanceof Error) {
-      if (error.name === "TokenExpiredError") {
-        throw new Error("Token has expired");
-      }
-      if (error.name === "JsonWebTokenError") {
-        throw new Error("Invalid token signature");
-      }
-      throw new Error(`Token verification failed: ${error.message}`);
+    if (error.name === "TokenExpiredError") {
+      throw new Error("Token has expired");
+    }
+    if (error.name === "JsonWebTokenError") {
+      throw new Error("Invalid token signature");
+    }
+    throw new Error(`Token verification failed: ${error.message}`);
     }
     throw new Error("Token verification failed");
   }

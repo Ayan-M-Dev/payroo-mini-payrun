@@ -1,6 +1,6 @@
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Download } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import {
@@ -19,6 +19,7 @@ import {
   formatDateReadable,
   formatHours,
 } from "@/utils/format";
+import { generatePayslipPDF } from "@/utils/pdfGenerator";
 
 export default function Payslip() {
   const { employeeId, payrunId } = useParams<{
@@ -51,6 +52,21 @@ export default function Payslip() {
   });
 
   const currentEmployee = employee?.find((emp) => emp.id === employeeId);
+
+  const handleDownloadPDF = () => {
+    if (!payslip || !currentEmployee || !payrun) {
+      toast.error("Unable to generate PDF. Missing data.");
+      return;
+    }
+
+    try {
+      generatePayslipPDF(payslip, currentEmployee, payrun);
+      toast.success("Payslip downloaded successfully");
+    } catch (error) {
+      toast.error("Failed to generate PDF. Please try again.");
+      console.error("PDF generation error:", error);
+    }
+  };
 
   if (payslipError) {
     toast.error("Failed to load payslip");
@@ -128,12 +144,22 @@ export default function Payslip() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Payslip Details</CardTitle>
-          <CardDescription>
-            {payrun
-              ? `Period: ${formatDateReadable(payrun.periodStart)} - ${formatDateReadable(payrun.periodEnd)}`
-              : `Payrun ID: ${payrunId}`}
-          </CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>Payslip Details</CardTitle>
+              <CardDescription>
+                {payrun
+                  ? `Period: ${formatDateReadable(payrun.periodStart)} - ${formatDateReadable(payrun.periodEnd)}`
+                  : `Payrun ID: ${payrunId}`}
+              </CardDescription>
+            </div>
+            {payslip && currentEmployee && payrun && (
+              <Button onClick={handleDownloadPDF} className="gap-2">
+                <Download className="h-4 w-4" />
+                <span className="hidden sm:inline">Download Payslip</span>
+              </Button>
+            )}
+          </div>
         </CardHeader>
         <CardContent className="space-y-6">
           {currentEmployee && (
