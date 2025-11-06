@@ -1,0 +1,13 @@
+node_modules
+# Keep environment variables out of version control
+.env
+
+/src/generated/prisma
+
+# Test database
+prisma/test.db
+prisma/test.db-journal
+
+# JWT keys (private key should NEVER be committed)
+keys/private-key.pem
+# Note: public-key.pem is safe to commit (it's used for verification)

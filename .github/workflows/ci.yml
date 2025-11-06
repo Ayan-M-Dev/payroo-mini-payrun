@@ -1,0 +1,207 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  backend-lint:
+    name: Backend Lint
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./Backend
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Cache node modules
+        uses: actions/cache@v4
+        with:
+          path: Backend/node_modules
+          key: ${{ runner.os }}-backend-node-${{ hashFiles('Backend/package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-backend-node-
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run ESLint
+        run: npm run lint
+
+      - name: Check Prettier formatting
+        run: npm run format:check
+
+  backend-typecheck:
+    name: Backend TypeCheck
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./Backend
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Cache node modules
+        uses: actions/cache@v4
+        with:
+          path: Backend/node_modules
+          key: ${{ runner.os }}-backend-node-${{ hashFiles('Backend/package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-backend-node-
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run TypeScript type check
+        run: npm run typecheck
+
+  backend-test:
+    name: Backend Tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./Backend
+    env:
+      DATABASE_URL: "file:./prisma/test.db"
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Cache node modules
+        uses: actions/cache@v4
+        with:
+          path: Backend/node_modules
+          key: ${{ runner.os }}-backend-node-${{ hashFiles('Backend/package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-backend-node-
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Generate Prisma Client
+        run: npx prisma generate
+
+      - name: Setup test database
+        run: |
+          npx prisma migrate deploy
+          cp prisma/test.db prisma/test.db.backup || true
+
+      - name: Run tests
+        run: npm test
+
+      - name: Upload test coverage (optional)
+        if: always()
+        uses: codecov/codecov-action@v4
+        with:
+          directory: ./Backend/coverage
+          flags: backend
+          fail_ci_if_error: false
+
+  frontend-lint:
+    name: Frontend Lint
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./Frontend
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Cache node modules
+        uses: actions/cache@v4
+        with:
+          path: Frontend/node_modules
+          key: ${{ runner.os }}-frontend-node-${{ hashFiles('Frontend/package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-frontend-node-
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run ESLint
+        run: npm run lint
+
+      - name: Check Prettier formatting
+        run: npm run format:check
+
+  frontend-typecheck:
+    name: Frontend TypeCheck
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./Frontend
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Cache node modules
+        uses: actions/cache@v4
+        with:
+          path: Frontend/node_modules
+          key: ${{ runner.os }}-frontend-node-${{ hashFiles('Frontend/package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-frontend-node-
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run TypeScript type check
+        run: npx tsc --noEmit
+
+  frontend-build:
+    name: Frontend Build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./Frontend
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Cache node modules
+        uses: actions/cache@v4
+        with:
+          path: Frontend/node_modules
+          key: ${{ runner.os }}-frontend-node-${{ hashFiles('Frontend/package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-frontend-node-
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build frontend
+        run: npm run build
+

@@ -1,0 +1,87 @@
+// Prisma schema for Payroo Mini Payrun
+// Database: SQLite
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Employee {
+  id             String   @id
+  firstName      String
+  lastName       String
+  type           String
+  baseHourlyRate Float
+  superRate      Float
+  bankBsb        String
+  bankAccount    String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  timesheets Timesheet[]
+  payslips   Payslip[]
+}
+
+model Timesheet {
+  id          String   @id @default(uuid())
+  employeeId  String
+  employee    Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  periodStart DateTime
+  periodEnd   DateTime
+  allowances  Float    @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  entries TimesheetEntry[]
+}
+
+model TimesheetEntry {
+  id              String    @id @default(uuid())
+  timesheetId     String
+  timesheet       Timesheet @relation(fields: [timesheetId], references: [id], onDelete: Cascade)
+  date            DateTime
+  start           String
+  end             String
+  unpaidBreakMins Int
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+model Payrun {
+  id          String   @id @default(uuid())
+  periodStart DateTime
+  periodEnd   DateTime
+  totalGross  Float    @default(0)
+  totalTax    Float    @default(0)
+  totalSuper  Float    @default(0)
+  totalNet    Float    @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  payslips Payslip[]
+}
+
+model Payslip {
+  id         String   @id @default(uuid())
+  payrunId   String
+  payrun     Payrun   @relation(fields: [payrunId], references: [id], onDelete: Cascade)
+  employeeId String
+  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  normalHours   Float
+  overtimeHours Float
+  gross         Float
+  tax           Float
+  super         Float
+  net           Float
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([payrunId, employeeId])
+}
