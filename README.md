@@ -244,7 +244,7 @@ npm run format
 The API supports two authentication methods:
 
 1. **Simplified Bearer Token** (Basic requirement): Accepts any non-empty Bearer token
-2. **JWT Authentication** (Bonus): Uses RSA256 with static public key
+2. **JWT Authentication** : Uses RSA256 with static public key
 
 To use JWT authentication:
 
@@ -399,6 +399,7 @@ npm run generate-keys
 
 - Postman Collection: `payroo-mini.json` (included in project root)
 - Assessment Requirements: `ASSESSMENT.md`
+- Key Decisions: `DECISIONS.md` (detailed architectural decisions and trade-offs)
 - API follows OpenAPI 3.1 specification (as per assessment requirements)
 
 ## 🎯 Key Features Implemented
@@ -409,16 +410,69 @@ npm run generate-keys
 ✅ Progressive tax calculation  
 ✅ Overtime calculation (38-hour threshold)  
 ✅ Superannuation calculation  
-✅ JWT authentication (bonus feature)  
+✅ JWT authentication  
 ✅ Structured JSON logging with request IDs  
 ✅ Unit tests for domain logic  
 ✅ Integration tests for API endpoints  
 ✅ Frontend with React + TypeScript  
 ✅ Form validation with React Hook Form + Zod  
 ✅ Accessible UI with proper labels and ARIA attributes  
-✅ ESLint and Prettier configuration
+✅ ESLint and Prettier configuration  
+✅ GitHub Actions CI/CD pipeline
+
+**Summary of key decisions:**
+
+- **Database**: SQLite with Prisma ORM (simple setup, easy migration to PostgreSQL)
+- **Validation**: Zod schemas (shared between frontend and backend)
+- **Authentication**: JWT with RSA256 + simplified Bearer token (requirement)
+- **State Management**: React Query (excellent for REST APIs)
+- **UI Components**: Shadcn UI + Tailwind CSS (accessible, customizable)
+- **Architecture**: Domain-driven design with clear separation of concerns
+
+## ⚖️ Trade-offs
+
+### Simplicity vs Scalability
+
+- **Chose**: SQLite for simplicity and fast development
+- **Trade-off**: Limited concurrent writes, not suitable for high-traffic production
+- **Mitigation**: Easy migration path to PostgreSQL via Prisma migrations
+
+### Type Safety vs Development Speed
+
+- **Chose**: Comprehensive TypeScript typing throughout
+- **Trade-off**: More initial setup time, slightly more verbose code
+- **Benefit**: Fewer runtime errors, better IDE support, easier refactoring
+
+### Framework Complexity vs Flexibility
+
+- **Chose**: Express.js (lightweight) over NestJS (more opinionated)
+- **Trade-off**: Less structure out of the box
+- **Benefit**: More flexibility, faster development, easier to understand
+
+## ⏱️ Time Spent
+
+**Total Estimated Time**: ~10 hours
+
+**Breakdown:**
+
+- **Backend Setup & API Development**: ~2 hours
+  - Express setup, Prisma schema, routes, services
+  - Domain logic (tax, super, overtime calculations)
+  - Validation schemas, error handling, logging
+- **Frontend Development**: ~2 hours
+  - React setup, routing, pages
+  - Forms with validation, tables, UI components
+  - API integration with React Query
+- **Testing**: ~2 hour
+  - Unit tests for domain logic
+  - Integration tests for API endpoints
+  - Test setup and helpers
+- **Polish & Documentation**: ~10 hour
+  - Code cleanup, linting, formatting, AWS PDF
+  - README, DECISIONS.md, code comments
+  - CI/CD setup (GitHub Actions)
 
 ## 👤 Author
 
-Ayan M
+Ayan M  
 Built for Payroo coding assessment
