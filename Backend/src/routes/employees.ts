@@ -36,4 +36,18 @@ router.get(
   })
 );
 
+router.delete(
+  "/:id",
+  asyncHandler(async (req, res) => {
+    const employee = await employeeService.getEmployeeById(req.params.id);
+
+    if (!employee) {
+      throw new AppError(404, "Employee not found");
+    }
+
+    await employeeService.deleteEmployee(req.params.id);
+    res.status(204).send();
+  })
+);
+
 export default router;

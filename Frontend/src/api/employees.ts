@@ -16,4 +16,8 @@ export const employeeApi = {
     const response = await apiClient.post<Employee>("/employees", employee);
     return response.data;
   },
+
+  delete: async (id: string): Promise<void> => {
+    await apiClient.delete(`/employees/${id}`);
+  },
 };

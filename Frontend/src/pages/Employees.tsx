@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Plus, Pencil } from "lucide-react";
+import { Plus, Pencil, Trash2 } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -54,6 +54,9 @@ export default function Employees() {
   const queryClient = useQueryClient();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
+  const [deletingEmployee, setDeletingEmployee] = useState<Employee | null>(
+    null
+  );
 
   const {
     data: employees,
@@ -95,6 +98,18 @@ export default function Employees() {
     },
   });
 
+  const deleteMutation = useMutation({
+    mutationFn: employeeApi.delete,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["employees"] });
+      toast.success("Employee deleted successfully");
+      setDeletingEmployee(null);
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "Failed to delete employee");
+    },
+  });
+
   const openAddDialog = () => {
     setEditingEmployee(null);
     reset({
@@ -117,8 +132,8 @@ export default function Employees() {
       lastName: employee.lastName,
       baseHourlyRate: employee.baseHourlyRate,
       superRate: employee.superRate,
-      bankBSB: employee.bank?.bsb || "",
-      bankAccount: employee.bank?.account || "",
+      bankBSB: employee.bank?.bsb || "Unknown",
+      bankAccount: employee.bank?.account || "Unknown",
     });
     setIsDialogOpen(true);
   };
@@ -188,7 +203,7 @@ export default function Employees() {
                   <TableHead scope="col">Hourly Rate</TableHead>
                   <TableHead scope="col">Super Rate</TableHead>
                   <TableHead scope="col">Bank Details</TableHead>
-                  <TableHead scope="col" className="text-right">
+                  <TableHead scope="col" className="text-center">
                     Actions
                   </TableHead>
                 </TableRow>
@@ -211,16 +226,27 @@ export default function Employees() {
                         ? `${employee.bank.bsb} / ${employee.bank.account}`
                         : "—"}
                     </TableCell>
-                    <TableCell className="text-right">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => openEditDialog(employee)}
-                        className="gap-2"
-                      >
-                        <Pencil className="h-3 w-3" />
-                        Edit
-                      </Button>
+                    <TableCell className="text-center">
+                      <div className="flex justify-center gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => openEditDialog(employee)}
+                          className="gap-2"
+                        >
+                          <Pencil className="h-3 w-3" />
+                          Edit
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setDeletingEmployee(employee)}
+                          className="gap-2 text-red-600 hover:text-red-700 hover:bg-red-50"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                          Delete
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -387,6 +413,44 @@ export default function Employees() {
               </Button>
             </DialogFooter>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={!!deletingEmployee}
+        onOpenChange={(open) => !open && setDeletingEmployee(null)}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Employee</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete{" "}
+              <strong>
+                {deletingEmployee?.firstName} {deletingEmployee?.lastName}
+              </strong>
+              ? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setDeletingEmployee(null)}
+              disabled={deleteMutation.isPending}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={() =>
+                deletingEmployee && deleteMutation.mutate(deletingEmployee.id)
+              }
+              disabled={deleteMutation.isPending}
+            >
+              {deleteMutation.isPending ? "Deleting..." : "Delete"}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
