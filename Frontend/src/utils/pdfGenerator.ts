@@ -1,7 +1,19 @@
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import type { Payslip, Payrun, Employee } from "@/types/api";
-import { formatCurrency, formatDateReadable, formatHours } from "@/utils/format";
+import {
+  formatCurrency,
+  formatDateReadable,
+  formatHours,
+} from "@/utils/format";
+
+interface AutoTableResult {
+  finalY?: number;
+}
+
+interface ExtendedJsPDF extends jsPDF {
+  lastAutoTable?: AutoTableResult;
+}
 
 const PRIMARY_COLOR: [number, number, number] = [0, 168, 98];
 const PRIMARY_FOREGROUND: [number, number, number] = [255, 255, 255];
@@ -15,7 +27,7 @@ export function generatePayslipPDF(
   employee: Employee,
   payrun: Payrun
 ): void {
-  const doc = new jsPDF();
+  const doc = new jsPDF() as ExtendedJsPDF;
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
   const margin = 12;
@@ -97,7 +109,7 @@ export function generatePayslipPDF(
       margin: { left: margin, right: margin },
     });
 
-    yPos = (doc as any).lastAutoTable?.finalY || yPos + 8;
+    yPos = (doc as ExtendedJsPDF).lastAutoTable?.finalY || yPos + 8;
 
     yPos += 7;
     doc.setFontSize(11);
@@ -110,7 +122,10 @@ export function generatePayslipPDF(
       body: [
         ["Normal Hours", formatHours(payslip.normalHours)],
         ["Overtime Hours", formatHours(payslip.overtimeHours)],
-        ["Total Hours", formatHours(payslip.normalHours + payslip.overtimeHours)],
+        [
+          "Total Hours",
+          formatHours(payslip.normalHours + payslip.overtimeHours),
+        ],
       ],
       startY: yPos,
       theme: "grid",
@@ -137,7 +152,10 @@ export function generatePayslipPDF(
         0: { cellWidth: contentWidth / 2, halign: "left", fontStyle: "normal" },
         1: { cellWidth: contentWidth / 2, halign: "right" },
       },
-      didParseCell: (data: any) => {
+      didParseCell: (data: {
+        row: { index: number };
+        cell: { styles: { fontStyle?: string } };
+      }) => {
         if (data.row.index === 2) {
           data.cell.styles.fontStyle = "bold";
         }
@@ -145,7 +163,7 @@ export function generatePayslipPDF(
       margin: { left: margin, right: margin },
     });
 
-    yPos = (doc as any).lastAutoTable?.finalY || yPos + 8;
+    yPos = (doc as ExtendedJsPDF).lastAutoTable?.finalY || yPos + 8;
 
     yPos += 7;
     doc.setFontSize(11);
@@ -188,7 +206,7 @@ export function generatePayslipPDF(
       margin: { left: margin, right: margin },
     });
 
-    yPos = (doc as any).lastAutoTable?.finalY || yPos + 2;
+    yPos = (doc as ExtendedJsPDF).lastAutoTable?.finalY || yPos + 2;
 
     autoTable(doc, {
       body: [["Net Pay", formatCurrency(payslip.net)]],
@@ -213,7 +231,7 @@ export function generatePayslipPDF(
       margin: { left: margin, right: margin },
     });
 
-    yPos = (doc as any).lastAutoTable?.finalY || yPos + 8;
+    yPos = (doc as ExtendedJsPDF).lastAutoTable?.finalY || yPos + 8;
 
     if (employee.bank) {
       yPos += 7;
@@ -247,7 +265,7 @@ export function generatePayslipPDF(
         margin: { left: margin, right: margin },
       });
 
-      yPos = (doc as any).lastAutoTable?.finalY || yPos + 4;
+      yPos = (doc as ExtendedJsPDF).lastAutoTable?.finalY || yPos + 4;
     }
 
     const footerY = pageHeight - 10;

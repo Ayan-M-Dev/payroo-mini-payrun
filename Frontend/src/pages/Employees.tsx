@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Plus, Pencil, Trash2 } from "lucide-react";
+import { Plus, Pencil } from "lucide-react";
 import {
   Card,
   CardContent,

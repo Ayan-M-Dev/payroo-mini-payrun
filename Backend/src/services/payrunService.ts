@@ -37,23 +37,43 @@ export async function generatePayrun(data: PayrunRequestInput) {
     throw new Error("No timesheets found for the specified period");
   }
 
+  type TimesheetWithRelations = (typeof timesheets)[0];
+  const timesheetsByEmployee = new Map<string, TimesheetWithRelations[]>();
+
+  for (const timesheet of timesheets) {
+    const existing = timesheetsByEmployee.get(timesheet.employeeId);
+    if (!existing) {
+      timesheetsByEmployee.set(timesheet.employeeId, [timesheet]);
+    } else {
+      existing.push(timesheet);
+    }
+  }
+
   const payslipData = [];
   let totalGross = 0;
   let totalTax = 0;
   let totalSuper = 0;
   let totalNet = 0;
 
-  for (const timesheet of timesheets) {
-    const entries: TimesheetEntryInput[] = timesheet.entries.map((entry) => ({
-      date: entry.date.toISOString().split("T")[0],
-      start: entry.start,
-      end: entry.end,
-      unpaidBreakMins: entry.unpaidBreakMins,
-    }));
+  for (const [employeeId, employeeTimesheets] of timesheetsByEmployee) {
+    const allEntries: TimesheetEntryInput[] = [];
+    let totalAllowances = 0;
 
-    const calculation = calculatePayroll(entries, timesheet.allowances, {
-      baseHourlyRate: timesheet.employee.baseHourlyRate,
-      superRate: timesheet.employee.superRate,
+    for (const timesheet of employeeTimesheets) {
+      const entries: TimesheetEntryInput[] = timesheet.entries.map((entry) => ({
+        date: entry.date.toISOString().split("T")[0],
+        start: entry.start,
+        end: entry.end,
+        unpaidBreakMins: entry.unpaidBreakMins,
+      }));
+      allEntries.push(...entries);
+      totalAllowances += timesheet.allowances;
+    }
+
+    const employee = employeeTimesheets[0].employee;
+    const calculation = calculatePayroll(allEntries, totalAllowances, {
+      baseHourlyRate: employee.baseHourlyRate,
+      superRate: employee.superRate,
     });
 
     totalGross += calculation.gross;
@@ -62,7 +82,7 @@ export async function generatePayrun(data: PayrunRequestInput) {
     totalNet += calculation.net;
 
     payslipData.push({
-      employeeId: timesheet.employeeId,
+      employeeId,
       normalHours: calculation.normalHours,
       overtimeHours: calculation.overtimeHours,
       gross: calculation.gross,

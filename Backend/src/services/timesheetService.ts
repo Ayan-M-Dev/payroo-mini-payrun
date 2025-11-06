@@ -34,19 +34,11 @@ export async function upsertTimesheet(data: TimesheetInput) {
     throw new Error(`Employee with ID ${data.employeeId} not found`);
   }
 
-  const existing = await prisma.timesheet.findFirst({
+  await prisma.timesheet.deleteMany({
     where: {
       employeeId: data.employeeId,
-      periodStart,
-      periodEnd,
     },
   });
-
-  if (existing) {
-    await prisma.timesheet.delete({
-      where: { id: existing.id },
-    });
-  }
 
   return prisma.timesheet.create({
     data: {
