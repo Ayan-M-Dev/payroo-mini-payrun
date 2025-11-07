@@ -29,7 +29,12 @@ export function transformTimesheet(
     employeeId: timesheet.employeeId,
     periodStart: timesheet.periodStart.toISOString().split("T")[0],
     periodEnd: timesheet.periodEnd.toISOString().split("T")[0],
-    entries: timesheet.entries.map((entry) => ({
+    entries: timesheet.entries.map((entry: {
+      date: Date;
+      start: string;
+      end: string;
+      unpaidBreakMins: number;
+    }) => ({
       date: entry.date.toISOString().split("T")[0],
       start: entry.start,
       end: entry.end,

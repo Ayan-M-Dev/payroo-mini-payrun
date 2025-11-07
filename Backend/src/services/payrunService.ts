@@ -2,6 +2,7 @@ import prisma from "../lib/db";
 import { PayrunRequestInput } from "../lib/validation";
 import { calculatePayroll } from "../domain/payroll";
 import { TimesheetEntryInput } from "../types/payroll";
+import { TimesheetEntry } from "@prisma/client";
 
 export async function generatePayrun(data: PayrunRequestInput) {
   const periodStart = new Date(data.periodStart);
@@ -60,7 +61,7 @@ export async function generatePayrun(data: PayrunRequestInput) {
     let totalAllowances = 0;
 
     for (const timesheet of employeeTimesheets) {
-      const entries: TimesheetEntryInput[] = timesheet.entries.map((entry) => ({
+      const entries: TimesheetEntryInput[] = timesheet.entries.map((entry: TimesheetEntry) => ({
         date: entry.date.toISOString().split("T")[0],
         start: entry.start,
         end: entry.end,

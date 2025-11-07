@@ -10,7 +10,11 @@ RUN npm ci
 FROM base AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
-COPY Backend/ ./
+COPY Backend/package.json Backend/package-lock.json ./
+COPY Backend/prisma ./prisma
+RUN npx prisma generate
+COPY Backend/src ./src
+COPY Backend/tsconfig.json ./
 RUN npm run build
 
 # Production image
