@@ -9,11 +9,11 @@ services:
       POSTGRES_PASSWORD: payrooPassword123
       POSTGRES_DB: payroo
     ports:
-      - "5432:5432"
+      - '5432:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U payrooAdmin"]
+      test: ['CMD-SHELL', 'pg_isready -U payrooAdmin']
       interval: 5s
       timeout: 5s
       retries: 5
@@ -26,7 +26,7 @@ services:
       dockerfile: Backend/Dockerfile
     container_name: payroo-backend
     ports:
-      - "4000:4000"
+      - '4000:4000'
     environment:
       - DATABASE_URL=postgresql://payrooAdmin:payrooPassword123@postgres:5432/payroo
       - PORT=4000
@@ -40,7 +40,7 @@ services:
       - ./Data:/data
     networks:
       - payroo-network
-    command: sh -c "mkdir -p /app/keys && chmod 777 /app/keys && node dist/scripts/generate-keys.js 2>/dev/null || true; npx prisma generate && npx prisma migrate deploy && node dist/index.js"
+    command: sh -c "node dist/scripts/generate-keys.js 2>/dev/null || true; npx prisma generate && npx prisma migrate deploy && node dist/index.js"
 
   frontend:
     build:
@@ -50,7 +50,7 @@ services:
         - VITE_API_URL=http://localhost:4000
     container_name: payroo-frontend
     ports:
-      - "3000:80"
+      - '3000:80'
     depends_on:
       - backend
     networks:
@@ -62,5 +62,3 @@ volumes:
 networks:
   payroo-network:
     driver: bridge
-
-

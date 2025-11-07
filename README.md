@@ -1,6 +1,9 @@
 # Payroo Mini Payrun
 
 A full-stack payroll management application. This application allows you to manage employees, track timesheets, and generate pay runs with automatic calculation of gross pay, tax, superannuation, and net pay.
+[![Employee Management System Overview](https://cdn.loom.com/sessions/thumbnails/df8592c4acfb4f8f96111806c4f0f2c7-97b6741663b9c7db-full-play.gif)](https://www.loom.com/share/df8592c4acfb4f8f96111806c4f0f2c7)
+
+**[Watch Full Video →](https://www.loom.com/share/df8592c4acfb4f8f96111806c4f0f2c7)**
 
 ## 🚀 Features
 
@@ -28,6 +31,7 @@ A full-stack payroll management application. This application allows you to mana
 - **Authentication**: JWT (RSA256) with simplified Bearer token support
 - **Logging**: Pino (structured JSON logging)
 - **Testing**: Jest + Supertest
+- **Deployement**: Local + AWS (Setup)
 
 ### Frontend
 
