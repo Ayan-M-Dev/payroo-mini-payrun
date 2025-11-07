@@ -40,7 +40,7 @@ services:
       - ./Data:/data
     networks:
       - payroo-network
-    command: sh -c "node dist/scripts/generate-keys.js 2>/dev/null || true; npx prisma generate && npx prisma migrate deploy && node dist/index.js"
+    command: sh -c "mkdir -p /app/keys && chmod 777 /app/keys && node dist/scripts/generate-keys.js 2>/dev/null || true; npx prisma generate && npx prisma migrate deploy && node dist/index.js"
 
   frontend:
     build:
