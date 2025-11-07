@@ -21,23 +21,25 @@ RUN npm run build
 FROM base AS runner
 WORKDIR /app
 
-ENV NODE_ENV=production
+ENV NODE_ENV=production \
+    PORT=4000
 
-# Don't run as root
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nodejs
+# Create non-root user
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 nodejs
 
+# Copy application files
 COPY --from=builder --chown=nodejs:nodejs /app/dist ./dist
 COPY --from=builder --chown=nodejs:nodejs /app/node_modules ./node_modules
 COPY --from=builder --chown=nodejs:nodejs /app/package.json ./package.json
 COPY --from=builder --chown=nodejs:nodejs /app/prisma ./prisma
 
+# Create keys directory (will be mounted as volume in docker-compose)
+RUN mkdir -p /app/keys && chown -R nodejs:nodejs /app/keys
+
 USER nodejs
 
 EXPOSE 4000
 
-ENV PORT=4000
-ENV DATABASE_URL="postgresql://payrooAdmin:payrooPassword123@postgres:5432/payroo"
-
-CMD ["node", "dist/index.js"]
+CMD ["sh", "-c", "node dist/scripts/generate-keys.js 2>/dev/null || true; node dist/index.js"]
 
