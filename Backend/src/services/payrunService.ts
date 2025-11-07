@@ -61,12 +61,14 @@ export async function generatePayrun(data: PayrunRequestInput) {
     let totalAllowances = 0;
 
     for (const timesheet of employeeTimesheets) {
-      const entries: TimesheetEntryInput[] = timesheet.entries.map((entry: TimesheetEntry) => ({
-        date: entry.date.toISOString().split("T")[0],
-        start: entry.start,
-        end: entry.end,
-        unpaidBreakMins: entry.unpaidBreakMins,
-      }));
+      const entries: TimesheetEntryInput[] = timesheet.entries.map(
+        (entry: TimesheetEntry) => ({
+          date: entry.date.toISOString().split("T")[0],
+          start: entry.start,
+          end: entry.end,
+          unpaidBreakMins: entry.unpaidBreakMins,
+        })
+      );
       allEntries.push(...entries);
       totalAllowances += timesheet.allowances;
     }
