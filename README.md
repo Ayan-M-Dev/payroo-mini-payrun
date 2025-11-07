@@ -91,19 +91,24 @@ That's it! The application will be available at:
 
 **Note**: You can use any valid user ID and email address to log in. No user database validation is performed
 
-**What happens automatically:**
-
-- ✅ JWT keys are generated automatically (`Backend/keys/`)
-- ✅ Prisma client is generated
-- ✅ Database migrations are applied
-- ✅ All services start in the correct order
-
 ### Seed Sample Data (Optional)
 
 To load sample employee and timesheet data:
 
+**From outside the container:**
+
 ```bash
-docker-compose exec backend npm run seed
+docker exec payroo-backend /bin/sh
+```
+
+**From inside the Docker container:**
+
+```bash
+# Navigate to the app directory (if not already there)
+cd /app
+
+# Run the compiled seed script
+node dist/scripts/seed.js
 ```
 
 This loads sample data from `Data/employees.json` and `Data/timesheets.json`.
