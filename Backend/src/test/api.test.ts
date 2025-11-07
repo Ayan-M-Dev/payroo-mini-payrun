@@ -1,8 +1,3 @@
-/**
- * API Integration Tests
- * Tests for happy path and validation errors
- */
-
 import request from "supertest";
 import app from "../app";
 import {
@@ -46,7 +41,6 @@ describe("API Integration Tests", () => {
     });
 
     it("should accept valid Bearer token", async () => {
-      // First create an employee
       await createTestEmployee("e-auth-test");
 
       const response = await request(app)
@@ -132,7 +126,6 @@ describe("API Integration Tests", () => {
       const invalidData = {
         id: "e-invalid",
         firstName: "Test",
-        // Missing lastName, type, etc.
       };
 
       const response = await request(app)
@@ -150,7 +143,7 @@ describe("API Integration Tests", () => {
         id: "e-invalid-type",
         firstName: "Test",
         lastName: "User",
-        type: "salaried", // Invalid - only "hourly" allowed
+        type: "salaried",
         baseHourlyRate: 35.0,
         superRate: 0.115,
       };
@@ -170,7 +163,7 @@ describe("API Integration Tests", () => {
         firstName: "Test",
         lastName: "User",
         type: "hourly",
-        baseHourlyRate: -10, // Invalid - must be positive
+        baseHourlyRate: -10,
         superRate: 0.115,
       };
 
@@ -195,7 +188,6 @@ describe("API Integration Tests", () => {
 
   describe("Timesheets API - Happy Path", () => {
     beforeEach(async () => {
-      // Ensure test employee exists
       await createTestEmployee("e-timesheet-test");
     });
 
@@ -256,7 +248,7 @@ describe("API Integration Tests", () => {
       const invalidData = {
         employeeId: "e-test",
         periodStart: "2025-08-17",
-        periodEnd: "2025-08-11", // End before start
+        periodEnd: "2025-08-11",
         entries: [],
         allowances: 0,
       };
@@ -278,7 +270,7 @@ describe("API Integration Tests", () => {
         entries: [
           {
             date: "2025-08-11",
-            start: "25:00", // Invalid time
+            start: "25:00",
             end: "17:30",
             unpaidBreakMins: 30,
           },
@@ -356,7 +348,6 @@ describe("API Integration Tests", () => {
     });
 
     it("GET /payruns/:id should return specific payrun", async () => {
-      // First create a payrun
       const payrunData = {
         periodStart: "2025-08-11",
         periodEnd: "2025-08-17",
@@ -369,7 +360,6 @@ describe("API Integration Tests", () => {
 
       const payrunId = createResponse.body.id;
 
-      // Then get it
       const response = await request(app)
         .get(`/payruns/${payrunId}`)
         .set(getAuthHeader());
@@ -421,7 +411,6 @@ describe("API Integration Tests", () => {
     });
 
     it("GET /payslips/:employeeId/:payrunId should return payslip", async () => {
-      // First create a payrun
       const payrunData = {
         periodStart: "2025-08-11",
         periodEnd: "2025-08-17",
@@ -435,7 +424,6 @@ describe("API Integration Tests", () => {
 
       const payrunId = payrunResponse.body.id;
 
-      // Then get the payslip
       const response = await request(app)
         .get(`/payslips/e-payslip-test/${payrunId}`)
         .set(getAuthHeader());

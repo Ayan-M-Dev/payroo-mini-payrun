@@ -9,6 +9,7 @@ import employeesRouter from "./routes/employees";
 import timesheetsRouter from "./routes/timesheets";
 import payrunsRouter from "./routes/payruns";
 import payslipsRouter from "./routes/payslips";
+import metricsRouter from "./routes/metrics";
 
 const app = express();
 
@@ -21,6 +22,7 @@ app.get("/health", (req, res) => {
   res.status(200).json({ status: "ok" });
 });
 
+app.use("/metrics", metricsRouter);
 app.use("/auth", authRouter);
 app.use(authMiddleware);
 

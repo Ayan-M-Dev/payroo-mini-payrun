@@ -1,0 +1,66 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: payroo-postgres
+    environment:
+      POSTGRES_USER: payrooAdmin
+      POSTGRES_PASSWORD: payrooPassword123
+      POSTGRES_DB: payroo
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U payrooAdmin"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - payroo-network
+
+  backend:
+    build:
+      context: .
+      dockerfile: Backend/Dockerfile
+    container_name: payroo-backend
+    ports:
+      - "4000:4000"
+    environment:
+      - DATABASE_URL=postgresql://payrooAdmin:payrooPassword123@postgres:5432/payroo
+      - PORT=4000
+      - NODE_ENV=development
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./Backend/keys:/app/keys
+      - ./Backend/prisma:/app/prisma
+      - ./Data:/data
+    networks:
+      - payroo-network
+    command: sh -c "npx prisma generate && npx prisma migrate deploy && node dist/index.js"
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Frontend/Dockerfile
+      args:
+        - VITE_API_URL=http://localhost:4000
+    container_name: payroo-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    networks:
+      - payroo-network
+
+volumes:
+  postgres_data:
+
+networks:
+  payroo-network:
+    driver: bridge
+
+

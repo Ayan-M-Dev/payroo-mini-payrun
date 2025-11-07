@@ -9,6 +9,7 @@ module.exports = tseslint.config(
       "@typescript-eslint/no-unused-vars": ["error", { argsIgnorePattern: "^_" }],
       "@typescript-eslint/no-explicit-any": "warn",
       "no-console": "off",
+      "no-empty": ["error", { allowEmptyCatch: true }],
     },
   },
   {

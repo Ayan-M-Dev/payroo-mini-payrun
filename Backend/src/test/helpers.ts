@@ -9,29 +9,19 @@ export function getAuthHeader() {
 export async function cleanupDatabase() {
   try {
     await prisma.payslip.deleteMany();
-  } catch {
-    // Table might not exist yet
-  }
+  } catch {}
   try {
     await prisma.payrun.deleteMany();
-  } catch {
-    // Table might not exist yet
-  }
+  } catch {}
   try {
     await prisma.timesheetEntry.deleteMany();
-  } catch {
-    // Table might not exist yet
-  }
+  } catch {}
   try {
     await prisma.timesheet.deleteMany();
-  } catch {
-    // Table might not exist yet
-  }
+  } catch {}
   try {
     await prisma.employee.deleteMany();
-  } catch {
-    // Table might not exist yet
-  }
+  } catch {}
 }
 
 export async function createTestEmployee(id: string = "e-test") {

@@ -5,6 +5,7 @@ on:
     branches: [main, develop]
   pull_request:
     branches: [main, develop]
+  workflow_dispatch: 
 
 jobs:
   backend-lint:
@@ -74,8 +75,23 @@ jobs:
     defaults:
       run:
         working-directory: ./Backend
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
     env:
-      DATABASE_URL: "file:./prisma/test.db"
+      DATABASE_URL: "postgresql://test:test@localhost:5432/test"
+      DATABASE_PROVIDER: "postgresql"
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -99,10 +115,22 @@ jobs:
       - name: Generate Prisma Client
         run: npx prisma generate
 
-      - name: Setup test database
+      - name: Wait for PostgreSQL to be ready
         run: |
-          npx prisma migrate deploy
-          cp prisma/test.db prisma/test.db.backup || true
+          echo "Waiting for PostgreSQL to be ready..."
+          for i in {1..30}; do
+            if timeout 2 bash -c 'cat < /dev/null > /dev/tcp/localhost/5432' 2>/dev/null; then
+              echo "PostgreSQL is ready!"
+              exit 0
+            fi
+            echo "Attempt $i/30: Waiting for PostgreSQL..."
+            sleep 1
+          done
+          echo "PostgreSQL failed to become ready"
+          exit 1
+
+      - name: Setup test database
+        run: npx prisma migrate deploy
 
       - name: Run tests
         run: npm test

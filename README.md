@@ -23,7 +23,7 @@ A full-stack payroll management application. This application allows you to mana
 
 - **Runtime**: Node.js with TypeScript
 - **Framework**: Express.js
-- **Database**: SQLite with Prisma ORM
+- **Database**: PostgreSQL with Prisma ORM (Docker for local development)
 - **Validation**: Zod schemas
 - **Authentication**: JWT (RSA256) with simplified Bearer token support
 - **Logging**: Pino (structured JSON logging)
@@ -45,6 +45,7 @@ A full-stack payroll management application. This application allows you to mana
 - Node.js 20+ (or 22+)
 - npm or yarn
 - Git
+- Docker and Docker Compose
 
 ## 🔧 Installation
 
@@ -69,7 +70,39 @@ cd ../Frontend
 npm install
 ```
 
-### 4. Set Up Environment Variables
+### 4. Set Up Database with Docker
+
+Start PostgreSQL using Docker Compose:
+
+```bash
+# From project root
+docker-compose up -d
+```
+
+Then setup the database:
+
+**Linux/Mac:**
+
+```bash
+cd Backend
+npm run db:setup
+```
+
+**Windows:**
+
+```bash
+cd Backend
+..\Scripts\setup-db.bat
+```
+
+This will:
+
+- Install dependencies
+- Generate Prisma client
+- Run database migrations
+- Seed the database with sample data
+
+### 5. Set Up Environment Variables
 
 Create a `.env` file in the `Backend` directory:
 
@@ -77,23 +110,15 @@ Create a `.env` file in the `Backend` directory:
 cd Backend
 ```
 
-Create `.env` file with:
+The `.env` file should contain:
 
 ```env
-DATABASE_URL="file:./dev.db"
+DATABASE_URL="postgresql://payrooAdmin:payrooPassword123@localhost:5432/payroo"
 PORT=4000
 LOG_LEVEL="info"
 ```
 
-### 5. Set Up Database
-
-```bash
-# Generate Prisma Client
-npx prisma generate
-
-# Run database migrations
-npx prisma migrate deploy
-```
+**Note**: For Docker setup, the password is `payrooPassword123` as configured in `docker-compose.yml`. For production, use a strong, secure password and store it securely (e.g., AWS Secrets Manager).
 
 ### 6. Generate JWT Keys (for JWT authentication)
 
@@ -105,7 +130,11 @@ This creates `keys/private-key.pem` and `keys/public-key.pem` in the Backend dir
 
 **Note**: The `keys/private-key.pem` file is gitignored for security. Make sure to generate it before using JWT authentication.
 
-### 7. Seed Sample Data (Optional)
+**Note**: If you used `npm run db:setup`, the database is already seeded. You can skip this step.
+
+### 7. Seed Sample Data (Optional - if not already done)
+
+If you didn't use `db:setup`, you can seed manually:
 
 ```bash
 npm run seed
@@ -157,8 +186,13 @@ npm run preview
 
 ### Backend Tests
 
+**Note**: Tests require PostgreSQL to be running. The test setup automatically configures `DATABASE_URL` to use PostgreSQL (either the local Docker database or CI test database).
+
 ```bash
 cd Backend
+
+# Make sure PostgreSQL is running (if testing locally)
+docker-compose up -d postgres
 
 # Run all tests
 npm test
@@ -282,7 +316,7 @@ payroo-mini-payrun/
 
 ## 💾 Database Schema
 
-The application uses SQLite with the following main entities:
+The application uses PostgreSQL with the following main entities:
 
 - **Employee**: Employee information (id, name, rates, bank details)
 - **Timesheet**: Timesheet for a period (employeeId, periodStart, periodEnd, allowances)
@@ -374,8 +408,14 @@ If you encounter database errors:
 
 ```bash
 cd Backend
-npx prisma migrate reset  # Resets database (WARNING: deletes all data)
-npx prisma migrate deploy  # Applies migrations
+
+# Run migrations on existing database
+npm run db:migrate
+
+# Or reset database (WARNING: deletes all data)
+docker-compose down -v
+docker-compose up -d postgres
+npm run db:setup
 ```
 
 ### Port Already in Use
@@ -395,9 +435,39 @@ cd Backend
 npm run generate-keys
 ```
 
+## 🐳 Docker Setup
+
+For local development, PostgreSQL runs in Docker. See `DOCKER_SETUP.md` for detailed instructions.
+
+**Quick commands:**
+
+```bash
+# Start PostgreSQL
+docker-compose up -d
+
+# Setup database (first time)
+cd Backend && npm run db:setup
+
+# Stop PostgreSQL
+docker-compose down
+```
+
+## ☁️ AWS Deployment
+
+The application can be deployed to AWS using AWS CDK. See `AWS_DEPLOYMENT_GUIDE.md` for complete deployment instructions.
+
+**Quick deploy:**
+
+```bash
+./deploy.sh  # Linux/Mac
+# or
+deploy.bat   # Windows
+```
+
 ## 📚 Additional Resources
 
-- Postman Collection: `payroo-mini.json` (included in project root)
+- Docker Setup: `DOCKER_SETUP.md` (local development with Docker)
+- AWS Deployment: `AWS_DEPLOYMENT_GUIDE.md` (complete AWS deployment guide)
 - Assessment Requirements: `ASSESSMENT.md`
 - Key Decisions: `DECISIONS.md` (detailed architectural decisions and trade-offs)
 - API follows OpenAPI 3.1 specification (as per assessment requirements)
@@ -406,7 +476,7 @@ npm run generate-keys
 
 ✅ RESTful API with all required endpoints  
 ✅ Zod validation for all endpoints  
-✅ SQLite database with Prisma ORM  
+✅ PostgreSQL database with Prisma ORM (Docker for local dev)  
 ✅ Progressive tax calculation  
 ✅ Overtime calculation (38-hour threshold)  
 ✅ Superannuation calculation  
@@ -422,7 +492,7 @@ npm run generate-keys
 
 **Summary of key decisions:**
 
-- **Database**: SQLite with Prisma ORM (simple setup, easy migration to PostgreSQL)
+- **Database**: PostgreSQL with Prisma ORM (Docker for local development, RDS for AWS production)
 - **Validation**: Zod schemas (shared between frontend and backend)
 - **Authentication**: JWT with RSA256 + simplified Bearer token (requirement)
 - **State Management**: React Query (excellent for REST APIs)
@@ -433,9 +503,9 @@ npm run generate-keys
 
 ### Simplicity vs Scalability
 
-- **Chose**: SQLite for simplicity and fast development
-- **Trade-off**: Limited concurrent writes, not suitable for high-traffic production
-- **Mitigation**: Easy migration path to PostgreSQL via Prisma migrations
+- **Chose**: PostgreSQL for production-ready database with Docker for local development
+- **Trade-off**: Requires Docker setup for local development
+- **Benefit**: Production-ready, supports concurrent writes, suitable for high-traffic production
 
 ### Type Safety vs Development Speed
 

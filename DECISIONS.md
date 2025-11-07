@@ -6,9 +6,9 @@
 
 - TypeScript for type safety, Express for lightweight REST API
 
-**Database**: SQLite with Prisma ORM
+**Database**: PostgreSQL with Prisma ORM
 
-- No external server required, easy migration to PostgreSQL later
+- Production-ready database, Docker for local development, RDS for AWS deployment
 
 **Validation**: Zod Schemas
 
@@ -55,15 +55,15 @@ services/   - Database service layer
 
 ## What Would Be Done Next
 
-**Short-term**: Error boundaries, request caching, rate limiting, database indexing
+**Short-term**: Error boundaries, request caching, rate limiting, database indexing optimization
 
-**Medium-term**: PostgreSQL migration, email notifications, pagination
+**Medium-term**: Email notifications, pagination, PDF upload to S3 from backend
 
 **Long-term**: Multi-tenancy, advanced features, performance optimization
 
 ## Trade-offs
 
-**Simplicity vs Scalability**: Chose SQLite for simplicity, easy migration to PostgreSQL
+**Simplicity vs Scalability**: Chose PostgreSQL for production-readiness, Docker for local development simplicity
 
 **Type Safety vs Speed**: Chose comprehensive TypeScript, fewer runtime errors
 
