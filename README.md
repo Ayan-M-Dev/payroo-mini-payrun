@@ -55,7 +55,7 @@ The easiest way to get started is using Docker Compose, which handles everything
 
 ```bash
 # Clone the repository
-git clone <repository-url>
+git clone https://github.com/Ayan-M-Dev/payroo-mini-payrun.git
 cd payroo-mini-payrun
 
 # Start all services (this will automatically):
