@@ -57,13 +57,19 @@ The easiest way to get started is using Docker Compose, which handles everything
 # Clone the repository
 git clone https://github.com/Ayan-M-Dev/payroo-mini-payrun.git
 cd payroo-mini-payrun
+```
 
+```bash
 # Start all services (this will automatically):
 # - Build backend and frontend images
 # - Start PostgreSQL database
 # - Generate JWT keys
 # - Run database migrations
 # - Start the application
+docker-compose build
+```
+
+```bash
 docker-compose up -d
 ```
 
@@ -71,6 +77,15 @@ That's it! The application will be available at:
 
 - **Frontend**: http://localhost:3000
 - **Backend API**: http://localhost:4000
+
+```json
+{
+  "userId": "any-user-id",
+  "email": "any@email.com"
+}
+```
+
+**Note**: You can use any valid user ID and email address to log in. No user database validation is performed
 
 **What happens automatically:**
 
