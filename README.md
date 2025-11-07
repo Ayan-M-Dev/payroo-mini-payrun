@@ -49,104 +49,119 @@ A full-stack payroll management application. This application allows you to mana
 
 ## 🔧 Installation
 
-### 1. Clone the repository
+### Quick Start with Docker Compose (Recommended)
+
+The easiest way to get started is using Docker Compose, which handles everything automatically:
 
 ```bash
+# Clone the repository
 git clone <repository-url>
 cd payroo-mini-payrun
-```
 
-### 2. Install Backend Dependencies
-
-```bash
-cd Backend
-npm install
-```
-
-### 3. Install Frontend Dependencies
-
-```bash
-cd ../Frontend
-npm install
-```
-
-### 4. Set Up Database with Docker
-
-Start PostgreSQL using Docker Compose:
-
-```bash
-# From project root
+# Start all services (this will automatically):
+# - Build backend and frontend images
+# - Start PostgreSQL database
+# - Generate JWT keys
+# - Run database migrations
+# - Start the application
 docker-compose up -d
 ```
 
-Then setup the database:
+That's it! The application will be available at:
 
-**Linux/Mac:**
+- **Frontend**: http://localhost:3000
+- **Backend API**: http://localhost:4000
 
-```bash
-cd Backend
-npm run db:setup
-```
+**What happens automatically:**
 
-**Windows:**
+- ✅ JWT keys are generated automatically (`Backend/keys/`)
+- ✅ Prisma client is generated
+- ✅ Database migrations are applied
+- ✅ All services start in the correct order
 
-```bash
-cd Backend
-..\Scripts\setup-db.bat
-```
+### Seed Sample Data (Optional)
 
-This will:
-
-- Install dependencies
-- Generate Prisma client
-- Run database migrations
-- Seed the database with sample data
-
-### 5. Set Up Environment Variables
-
-Create a `.env` file in the `Backend` directory:
+To load sample employee and timesheet data:
 
 ```bash
-cd Backend
+docker-compose exec backend npm run seed
 ```
 
-The `.env` file should contain:
+This loads sample data from `Data/employees.json` and `Data/timesheets.json`.
 
-```env
-DATABASE_URL="postgresql://payrooAdmin:payrooPassword123@localhost:5432/payroo"
-PORT=4000
-LOG_LEVEL="info"
-```
+### Manual Setup (Without Docker)
 
-**Note**: For Docker setup, the password is `payrooPassword123` as configured in `docker-compose.yml`. For production, use a strong, secure password and store it securely (e.g., AWS Secrets Manager).
+If you prefer to run without Docker, you'll need to:
 
-### 6. Generate JWT Keys (for JWT authentication)
+1. **Install dependencies:**
 
-```bash
-npm run generate-keys
-```
+   ```bash
+   cd Backend && npm install
+   cd ../Frontend && npm install
+   ```
 
-This creates `keys/private-key.pem` and `keys/public-key.pem` in the Backend directory.
+2. **Set up PostgreSQL database** (you'll need PostgreSQL running locally)
 
-**Note**: The `keys/private-key.pem` file is gitignored for security. Make sure to generate it before using JWT authentication.
+3. **Create `.env` file** in `Backend/`:
 
-**Note**: If you used `npm run db:setup`, the database is already seeded. You can skip this step.
+   ```env
+   DATABASE_URL="postgresql://user:password@localhost:5432/payroo"
+   PORT=4000
+   LOG_LEVEL="info"
+   ```
 
-### 7. Seed Sample Data (Optional - if not already done)
+4. **Generate Prisma client and run migrations:**
 
-If you didn't use `db:setup`, you can seed manually:
+   ```bash
+   cd Backend
+   npx prisma generate
+   npx prisma migrate deploy
+   ```
 
-```bash
-npm run seed
-```
+5. **Generate JWT keys:**
 
-This loads sample employee and timesheet data from `../Data/employees.json` and `../Data/timesheets.json`.
+   ```bash
+   npm run generate-keys
+   ```
+
+6. **Seed database (optional):**
+   ```bash
+   npm run seed
+   ```
 
 ## 🏃 Running the Application
 
-### Backend
+### Using Docker Compose (Recommended)
 
-#### Development Mode
+**Start all services:**
+
+```bash
+docker-compose up -d
+```
+
+**View logs:**
+
+```bash
+docker-compose logs -f
+```
+
+**Stop all services:**
+
+```bash
+docker-compose down
+```
+
+**Rebuild after code changes:**
+
+```bash
+docker-compose up -d --build
+```
+
+### Manual Development (Without Docker)
+
+#### Backend
+
+**Development Mode:**
 
 ```bash
 cd Backend
@@ -155,7 +170,7 @@ npm run dev
 
 The backend will start on `http://localhost:4000`
 
-#### Production Mode
+**Production Mode:**
 
 ```bash
 cd Backend
@@ -163,9 +178,9 @@ npm run build
 npm start
 ```
 
-### Frontend
+#### Frontend
 
-#### Development Mode
+**Development Mode:**
 
 ```bash
 cd Frontend
@@ -174,7 +189,7 @@ npm run dev
 
 The frontend will start on `http://localhost:5173` (or another port if 5173 is occupied)
 
-#### Production Build
+**Production Build:**
 
 ```bash
 cd Frontend
@@ -404,18 +419,22 @@ POST /payruns
 
 ### Database Issues
 
-If you encounter database errors:
+If you encounter database errors with Docker Compose:
+
+```bash
+# Reset everything (WARNING: deletes all data)
+docker-compose down -v
+docker-compose up -d
+
+# Or just restart the backend to re-run migrations
+docker-compose restart backend
+```
+
+For manual setup:
 
 ```bash
 cd Backend
-
-# Run migrations on existing database
-npm run db:migrate
-
-# Or reset database (WARNING: deletes all data)
-docker-compose down -v
-docker-compose up -d postgres
-npm run db:setup
+npm run db:migrate  # Run migrations on existing database
 ```
 
 ### Port Already in Use
@@ -428,7 +447,17 @@ PORT=4001
 
 ### JWT Keys Missing
 
-If JWT authentication fails:
+With Docker Compose, keys are generated automatically. If you need to regenerate:
+
+```bash
+# Remove keys and restart
+rm -rf Backend/keys/*  # Linux/Mac
+# or
+Remove-Item Backend\keys\*  # Windows PowerShell
+docker-compose restart backend
+```
+
+For manual setup:
 
 ```bash
 cd Backend
@@ -437,19 +466,25 @@ npm run generate-keys
 
 ## 🐳 Docker Setup
 
-For local development, PostgreSQL runs in Docker. See `DOCKER_SETUP.md` for detailed instructions.
+Docker Compose is the recommended way to run the application. It handles everything automatically:
 
 **Quick commands:**
 
 ```bash
-# Start PostgreSQL
+# Start all services
 docker-compose up -d
 
-# Setup database (first time)
-cd Backend && npm run db:setup
+# View logs
+docker-compose logs -f
 
-# Stop PostgreSQL
+# Stop all services
 docker-compose down
+
+# Rebuild after code changes
+docker-compose up -d --build
+
+# Seed sample data
+docker-compose exec backend npm run seed
 ```
 
 ## ☁️ AWS Deployment
