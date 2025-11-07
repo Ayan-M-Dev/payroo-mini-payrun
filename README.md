@@ -269,6 +269,19 @@ cd Frontend
 npm run format
 ```
 
+## 🔄 CI/CD Pipeline
+
+The project includes a GitHub Actions CI/CD pipeline that automatically runs on every push and pull request to `main` or `develop` branches.
+
+**What the pipeline checks:**
+
+- **Backend Lint**: ESLint and Prettier formatting checks
+- **Backend TypeCheck**: TypeScript compilation validation
+- **Backend Tests**: Runs all tests with PostgreSQL service (unit + integration tests)
+- **Frontend Lint**: ESLint and Prettier formatting checks
+- **Frontend TypeCheck**: TypeScript type checking
+- **Frontend Build**: Ensures the frontend builds successfully
+
 ## 📡 API Endpoints
 
 ### Public Endpoints
